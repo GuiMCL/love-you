@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>segredo amor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070206;
+      --panel-bg: rgba(18, 7, 14, 0.75);
+      --border: rgba(255, 215, 225, 0.15);
+      --accent: #d83a5e;
+      --gold: #d4af37;
+      --text: #f7f2f5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 40%, #1a0614 0%, #080206 60%, #020003 100%);
+      font-family: 'Montserrat', sans-serif;
+      color: var(--text);
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      box-shadow: inset 0 0 140px rgba(0, 0, 0, 0.88);
+      background: radial-gradient(circle at center, transparent 35%, rgba(0,0,0,0.55) 100%);
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 36px;
+      left: 40px;
+      right: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .hud-header {
+      pointer-events: none;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .brand-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 34px;
+      font-weight: 300;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 20%, #ffccd5 60%, #d4af37 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+      text-shadow: 0 0 30px rgba(216, 58, 94, 0.4);
+    }
+    .typewriter-cursor {
+      display: inline-block;
+      margin-left: 3px;
+      color: #ff688e;
+      font-weight: 300;
+      animation: blinkCursor 0.85s infinite;
+      -webkit-text-fill-color: #ff688e;
+    }
+
+    @keyframes blinkCursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.45);
+      font-weight: 300;
+    }
+
+    .controls-deck {
+      position: absolute;
+      bottom: 36px;
+      left: 40px;
+      width: 320px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      z-index: 10;
+      pointer-events: auto;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, visibility 0.4s;
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .controls-deck.collapsed {
+      transform: translateY(30px) scale(0.92);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .deck-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .deck-title {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 600;
+    }
+
+    .close-deck-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      border-radius: 50%;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .close-deck-btn:hover {
+      color: #fff;
+      transform: scale(1.2);
+    }
+
+    .deck-toggle-btn {
+      position: absolute;
+      bottom: 36px;
+      left: 40px;
+      z-index: 11;
+      background: var(--panel-bg);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(15px);
+    }
+
+    .deck-toggle-btn.visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    /* Oculto para manter a experiência romântica e limpa. */
+    .controls-deck,
+    .deck-toggle-btn {
+      display: none !important;
+    }
+
+    .deck-toggle-btn:hover {
+      background: rgba(216, 58, 94, 0.25);
+      border-color: rgba(216, 58, 94, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .deck-section {
+      margin-bottom: 18px;
+    }
+
+    .deck-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .slider-label {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
+      font-weight: 400;
+    }
+
+    .slider-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      color: #ff859d;
+      font-style: italic;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ff3b68;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(255, 59, 104, 0.9);
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+
+    .palettes-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .palette-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .palette-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .palette-btn.active {
+      transform: scale(1.25);
+      border-color: #ffffff;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.7);
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .luxury-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.85);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .luxury-btn:hover {
+      background: rgba(216, 58, 94, 0.2);
+      border-color: rgba(216, 58, 94, 0.5);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(216, 58, 94, 0.3);
+    }
+
+    .luxury-btn.active {
+      background: linear-gradient(135deg, #d83a5e, #8f1734);
+      border-color: #ff6b87;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(216, 58, 94, 0.5);
+    }
+
+    .bottom-hint {
+      position: absolute;
+      bottom: 36px;
+      right: 40px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      background: rgba(10, 5, 8, 0.5);
+      padding: 8px 18px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .top-bar {
+        top: 18px;
+        left: 18px;
+        right: 18px;
+        gap: 10px;
+      }
+      .brand-title {
+        font-size: 19px;
+        letter-spacing: 1.5px;
+      }
+      .brand-sub {
+        font-size: 8.5px;
+        letter-spacing: 1.5px;
+      }
+      .letter-toggle-btn {
+        padding: 7px 11px;
+        font-size: 9.5px;
+        letter-spacing: 0.8px;
+      }
+      .controls-deck {
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        padding: 16px;
+        max-height: 52vh;
+        overflow-y: auto;
+        border-radius: 18px;
+      }
+      .deck-toggle-btn {
+        bottom: 16px;
+        left: 16px;
+      }
+      .letter-modal-card {
+        padding: 28px 20px 22px;
+        border-radius: 20px;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      .letter-heading {
+        font-size: 24px;
+      }
+      .letter-body {
+        font-size: 16px;
+        line-height: 1.65;
+      }
+      .bottom-hint { display: none; }
+    }
+
+    .letter-toggle-btn {
+      position: relative;
+      top: auto;
+      right: auto;
+      flex-shrink: 0;
+      z-index: 10;
+      background: rgba(28, 8, 20, 0.72);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid rgba(255, 180, 205, 0.25);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(216, 58, 94, 0.2);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+    .letter-toggle-btn:hover {
+      background: rgba(216, 58, 94, 0.32);
+      border-color: rgba(255, 200, 220, 0.6);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(216, 58, 94, 0.35);
+    }
+
+    .letter-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(4, 1, 5, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      padding: 24px;
+    }
+    .letter-modal-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .letter-modal-card {
+      position: relative;
+      max-width: 480px;
+      width: 100%;
+      background: linear-gradient(145deg, rgba(28, 9, 22, 0.96), rgba(12, 3, 10, 0.98));
+      border: 1px solid rgba(255, 215, 225, 0.25);
+      border-radius: 24px;
+      padding: 38px 34px 30px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.75), 0 0 45px rgba(216, 58, 94, 0.25);
+      color: #f7eef2;
+      transform: translateY(20px) scale(0.94);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
+    }
+    .letter-modal-backdrop.open .letter-modal-card {
+      transform: translateY(0) scale(1);
+    }
+    .letter-close-btn {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 6px;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .letter-close-btn:hover {
+      color: #fff;
+      transform: scale(1.15);
+    }
+    .letter-seal {
+      font-size: 28px;
+      color: #d4af37;
+      margin-bottom: 6px;
+      text-shadow: 0 0 16px rgba(212, 175, 55, 0.5);
+    }
+    .letter-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .letter-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+      margin: 0 auto 18px;
+    }
+    .letter-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      line-height: 1.7;
+      color: rgba(255, 235, 242, 0.92);
+      margin-bottom: 22px;
+      text-align: left;
+    }
+    .letter-body p {
+      margin-bottom: 12px;
+    }
+    .letter-highlight {
+      font-style: italic;
+      color: #ffccd5;
+      font-size: 19px;
+      text-align: center;
+      margin-top: 16px;
+    }
+    .letter-sign {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      color: #d4af37;
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    .floating-heart {
+      position: fixed;
+      pointer-events: none;
+      user-select: none;
+      z-index: 150;
+      animation: heartBurst 1.8s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 0 8px rgba(255, 104, 142, 0.7));
+    }
+    @keyframes heartBurst {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translate(0, 0) scale(0.6) rotate(var(--rot, 0deg));
+      }
+      40% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translate(var(--tx, 0px), var(--ty, -35px)) scale(1.2) rotate(calc(var(--rot, 0deg) + 10deg));
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translate(calc(var(--tx, 0px) * 1.3), calc(var(--ty, -35px) - 95px)) scale(0.8) rotate(calc(var(--rot, 0deg) + 25deg));
+      }
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <div id="webgl-canvas"></div>
+  <div class="vignette"></div>
+
+  <div class="top-bar">
+    <div class="hud-header">
+      <div class="brand-title"><span id="typewriterText"></span><span class="typewriter-cursor">|</span></div>
+      <div class="brand-sub">Florescendo para sempre &bull; Feita com amor</div>
+    </div>
+    <button id="letterBtn" class="letter-toggle-btn" title="Uma carta de amor" onclick="document.getElementById('letterModal').classList.add('open')">💌 Carta de amor</button>
+  </div>
+
+  <div id="letterModal" class="letter-modal-backdrop">
+    <div class="letter-modal-card">
+      <button id="closeLetterBtn" class="letter-close-btn" title="Fechar carta" onclick="document.getElementById('letterModal').classList.remove('open')">✕</button>
+      <div class="letter-seal">❦</div>
+      <div class="letter-heading">Para o meu grande amor</div>
+      <div class="letter-divider"></div>
+      <div class="letter-body">
+        <p>Sei que essas não são de verdade, amor, mas eu amo fazer isso pra você. Amo fazer coisas pra você; talvez não seja algo que você veja grande valor, mas isso, pra mim, é uma forma de dizer que eu te amo muito.</p>
+        <p>Você é incrível, amor. Obrigado por tanto e por tudo que você faz por mim. Também peço desculpas pelas coisas do dia a dia. Sei que às vezes posso ser chato e meloso, mas é algo que tenho me policiado tanto para não ocorrer, para deixar nossa relação sempre leve e gostosa.</p>
+        <p>Não vou mentir: penso demais em muitas coisas que acabam me sabotando, mas é muito mais sobre mim do que sobre você. Só espero que você possa me contar tudo que te incomoda, entre outras coisas, amor.</p>
+        <p>Obrigado por ser uma pessoa que acaba me acalmando no dia a dia e nas grandes coisas que acontecem, e por apoiar muitas das coisas que conto para você.</p>
+        <p>Você tem sido a melhor parte do meu dia. Claro, isso não quer dizer que meu mundo gira em torno de você ou coisas assim; quer dizer que eu escolho estar com você porque eu quero, porque eu gosto e amo passar meu tempo contigo. Depois que você chegou, muita coisa mudou. Sinto que saí daquela minha rotina alienada e passei a me cuidar melhor — cof, cof — kkkkk, quase, amor, mas eu me cuido. Também tenho feito planos com você, tanto para sair quanto para muitas outras coisas, e isso é muito legal.</p>
+        <p>Enfim, meu amor, te amo muito. Você é incrível em todos os sentidos, eu me inspiro em você e te admiro.</p>
+        <p class="letter-highlight">Eu te amo muito. Você merece muito amor.</p>
+      </div>
+      <div class="letter-sign">Com todo o meu amor ❤️</div>
+    </div>
+  </div>
+  <button id="toggleDeckBtn" class="deck-toggle-btn" title="Mostrar controles (pressione H)"><span>✦</span> Controles</button>
+
+  <div class="controls-deck" id="controlsDeck">
+    <div class="deck-top-bar">
+      <div class="deck-title"></div>
+      <button id="closeDeckBtn" class="close-deck-btn" title="Ocultar controles (pressione H)">✕</button>
+    </div>
+    <div class="deck-section">
+      <div class="slider-header">
+        <span class="slider-label">Florescimento</span>
+        <span class="slider-val" id="bloomVal">100%</span>
+      </div>
+      <input type="range" id="bloomSlider" min="0" max="1" step="0.002" value="1.0">
+    </div>
+
+    <div class="deck-section">
+      <div class="slider-header">
+        <span class="slider-label">Velocidade do ciclo</span>
+        <span class="slider-val" id="speedVal">1.0x</span>
+      </div>
+      <input type="range" id="speedSlider" min="0.2" max="2.5" step="0.1" value="1.0">
+    </div>
+
+    <div class="deck-section">
+      <div class="slider-label">Paleta botânica</div>
+      <div class="palettes-row">
+        <div class="palette-btn active" data-palette="crimson" style="background: radial-gradient(circle, #ff688e, #d83a5e, #140004);" title="Carmesim vintage"></div>
+        <div class="palette-btn" data-palette="blush" style="background: radial-gradient(circle, #ff85a2, #e65c7b, #25040e);" title="Peônia rosada"></div>
+        <div class="palette-btn" data-palette="gold" style="background: radial-gradient(circle, #ffe6a7, #c69214, #1f1000);" title="Ouro imperial"></div>
+        <div class="palette-btn" data-palette="violet" style="background: radial-gradient(circle, #c77dff, #7b2cbf, #0a0014);" title="Violeta gótica"></div>
+        <div class="palette-btn" data-palette="snow" style="background: radial-gradient(circle, #ffffff, #94a3b8, #12171e);" title="Pérola de neve"></div>
+        <div class="palette-btn" data-palette="noir" style="background: radial-gradient(circle, #800020, #450012, #040002);" title="Vinho noir"></div>
+      </div>
+    </div>
+
+    <div class="btn-grid">
+      <button id="loopBtn" class="luxury-btn active">Ciclo de florescimento</button>
+      <button id="breezeBtn" class="luxury-btn active">Brisa</button>
+      <button id="dewBtn" class="luxury-btn active">Gotas de orvalho</button>
+      <button id="exportBtn" class="luxury-btn">Salvar imagem</button>
+    </div>
+  </div>
+
+  <div class="bottom-hint">Arraste com o botão esquerdo: girar em 3D &bull; botão direito: mover &bull; rolar: zoom</div>
+
+  <script>
+    // --- Palette Definitions ---
+    const PALETTES = {
+      crimson: {
+        darkRoot: new THREE.Color(0x100002),
+        midShadow: new THREE.Color(0x38000a),
+        midBody: new THREE.Color(0xb8143c),
+        brightGlow: new THREE.Color(0xe62854),
+        rimHighlight: new THREE.Color(0xff8ca8),
+        sss: new THREE.Color(0xff2255),
+        sheen: new THREE.Color(0xffb8cb),
+        coreLight: 0xff1447,
+        rimLight: 0xff688e,
+        groundLight: 0x2e401c
+      },
+      blush: {
+        darkRoot: new THREE.Color(0x22030c),
+        midShadow: new THREE.Color(0x4a081e),
+        midBody: new THREE.Color(0xd94f70),
+        brightGlow: new THREE.Color(0xff7597),
+        rimHighlight: new THREE.Color(0xffdde5),
+        sss: new THREE.Color(0xff668a),
+        sheen: new THREE.Color(0xfff0f5),
+        coreLight: 0xff5c85,
+        rimLight: 0xffccd5,
+        groundLight: 0x3d4a25
+      },
+      gold: {
+        darkRoot: new THREE.Color(0x1c0e00),
+        midShadow: new THREE.Color(0x422200),
+        midBody: new THREE.Color(0xbf8315),
+        brightGlow: new THREE.Color(0xf2b533),
+        rimHighlight: new THREE.Color(0xfff3b0),
+        sss: new THREE.Color(0xe69a19),
+        sheen: new THREE.Color(0xfffae0),
+        coreLight: 0xfb5607,
+        rimLight: 0xffd166,
+        groundLight: 0x453d15
+      },
+      violet: {
+        darkRoot: new THREE.Color(0x080010),
+        midShadow: new THREE.Color(0x1e0138),
+        midBody: new THREE.Color(0x7220b3),
+        brightGlow: new THREE.Color(0x9b42e6),
+        rimHighlight: new THREE.Color(0xc77dff),
+        sss: new THREE.Color(0x8338ec),
+        sheen: new THREE.Color(0xe0aaff),
+        coreLight: 0x9d4edd,
+        rimLight: 0xc77dff,
+        groundLight: 0x22183d
+      },
+      snow: {
+        darkRoot: new THREE.Color(0x10151a),
+        midShadow: new THREE.Color(0x242e3d),
+        midBody: new THREE.Color(0x8899ac),
+        brightGlow: new THREE.Color(0xcbd5e1),
+        rimHighlight: new THREE.Color(0xffffff),
+        sss: new THREE.Color(0xffccd5),
+        sheen: new THREE.Color(0xffffff),
+        coreLight: 0xffccd5,
+        rimLight: 0xf1f5f9,
+        groundLight: 0x3d4a38
+      },
+      noir: {
+        darkRoot: new THREE.Color(0x030001),
+        midShadow: new THREE.Color(0x180005),
+        midBody: new THREE.Color(0x540017),
+        brightGlow: new THREE.Color(0x8c0029),
+        rimHighlight: new THREE.Color(0xcc003d),
+        sss: new THREE.Color(0x800020),
+        sheen: new THREE.Color(0xff4d79),
+        coreLight: 0x800020,
+        rimLight: 0xa80026,
+        groundLight: 0x241212
+      }
+    };
+
+    let activePalette = PALETTES.crimson;
+
+    const state = {
+      bloom: 1.0,
+      loop: true,
+      loopSpeed: 1.0,
+      breeze: true,
+      dewdrops: true,
+      sssStrength: 1.1
+    };
+
+    // --- Three.js Setup ---
+    const container = document.getElementById('webgl-canvas');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x070206, 0.022);
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 4.6, 5.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.04;
+    controls.minDistance = 2.5;
+    controls.maxDistance = 14.0;
+    controls.target.set(0, 0.35, 0);
+
+    function updateCameraFraming() {
+      const isPortrait = window.innerWidth < window.innerHeight;
+      if (isPortrait) {
+        camera.fov = 46;
+        camera.position.set(0, 5.4, 7.6);
+        controls.target.set(0, 0.65, 0);
+      } else {
+        camera.fov = 38;
+        camera.position.set(0, 4.6, 5.2);
+        controls.target.set(0, 0.35, 0);
+      }
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+    updateCameraFraming();
+
+    // --- Cinematic Lighting ---
+    const ambientLight = new THREE.AmbientLight(0x241220, 1.7);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xfff0e6, 2.5);
+    keyLight.position.set(4.5, 9.5, 5.5);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.bias = -0.0004;
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xd1a3b8, 1.4);
+    fillLight.position.set(-6.0, 3.5, -4.0);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.PointLight(activePalette.rimLight, 4.8, 12.0);
+    rimLight.position.set(0.0, 4.5, -3.2);
+    scene.add(rimLight);
+
+    const coreGlow = new THREE.PointLight(activePalette.coreLight, 4.2, 4.0);
+    coreGlow.position.set(0, 0.6, 0);
+    scene.add(coreGlow);
+
+    const bottomBounceLight = new THREE.DirectionalLight(activePalette.groundLight, 1.3);
+    bottomBounceLight.position.set(0, -5, 2);
+    scene.add(bottomBounceLight);
+
+    // --- Double-Sided Velvet SSS Shader ---
+    const PetalShader = {
+      uniforms: {
+        uTime: { value: 0 },
+        uDarkRoot: { value: activePalette.darkRoot },
+        uMidShadow: { value: activePalette.midShadow },
+        uMidBody: { value: activePalette.midBody },
+        uBrightGlow: { value: activePalette.brightGlow },
+        uRimHighlight: { value: activePalette.rimHighlight },
+        uSSSColor: { value: activePalette.sss },
+        uSheenColor: { value: activePalette.sheen },
+        uSSSIntensity: { value: state.sssStrength },
+        uLightPos: { value: keyLight.position },
+        uBackLightPos: { value: rimLight.position },
+        uCoreLightPos: { value: coreGlow.position }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPos;
+        varying vec3 vViewDir;
+
+        void main() {
+          vUv = uv;
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPos = worldPos.xyz;
+          vNormal = normalize(mat3(modelMatrix) * normal);
+          vViewDir = normalize(cameraPosition - worldPos.xyz);
+          gl_Position = projectionMatrix * viewMatrix * worldPos;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uDarkRoot;
+        uniform vec3 uMidShadow;
+        uniform vec3 uMidBody;
+        uniform vec3 uBrightGlow;
+        uniform vec3 uRimHighlight;
+        uniform vec3 uSSSColor;
+        uniform vec3 uSheenColor;
+        uniform float uSSSIntensity;
+        uniform vec3 uLightPos;
+        uniform vec3 uBackLightPos;
+        uniform vec3 uCoreLightPos;
+
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vWorldPos;
+        varying vec3 vViewDir;
+
+        void main() {
+          vec3 N = normalize(vNormal);
+          if (!gl_FrontFacing) {
+            N = -N;
+          }
+
+          vec3 V = normalize(vViewDir);
+          vec3 L = normalize(uLightPos - vWorldPos);
+          vec3 BackL = normalize(uBackLightPos - vWorldPos);
+          vec3 CoreL = normalize(uCoreLightPos - vWorldPos);
+
+          float u = vUv.x; // 0 (base) to 1 (tip)
+          float v = vUv.y * 2.0 - 1.0; // -1 to 1
+
+          // Velvet Depth Multi-Stop Gradient
+          float rootT = smoothstep(0.0, 0.30, u);
+          float midT = smoothstep(0.22, 0.70, u);
+          float glowT = smoothstep(0.58, 0.90, u);
+          float rimT = smoothstep(0.82, 0.98, u);
+
+          vec3 albedo = mix(uDarkRoot, uMidShadow, rootT);
+          albedo = mix(albedo, uMidBody, midT);
+          albedo = mix(albedo, uBrightGlow, glowT);
+          albedo = mix(albedo, uRimHighlight, rimT);
+
+          // Translucent rim highlight
+          float edge = smoothstep(0.68, 1.0, abs(v)) * 0.28;
+          albedo += uRimHighlight * edge;
+
+          // Procedural Botanical Vascular Veining & Velvet Papillae
+          float vBranch = abs(v) * (22.0 + u * 12.0);
+          float primaryVeins = sin(vBranch + u * 8.0);
+          float secondaryVeins = sin(vBranch * 2.2 - u * 14.0 + sin(v * 35.0) * 0.8);
+          float vascularNet = primaryVeins * 0.65 + secondaryVeins * 0.35;
+          float veinMask = smoothstep(0.12, 0.92, u) * (1.0 - smoothstep(0.85, 1.0, abs(v) * 0.9));
+          
+          // Subtle velvet micro-papillae texture
+          float papillae = sin(u * 140.0) * sin(v * 140.0) * 0.015;
+          albedo += (vascularNet * 0.028 + papillae) * veinMask;
+
+          // Inner Spiral Cavity Darkening (Depth Self-Occlusion)
+          float coreOcclusion = smoothstep(-0.35, 0.85, vWorldPos.y) * 0.38 + 0.62;
+          albedo *= coreOcclusion;
+          // Direct Diffuse Lighting
+          float wrappedDiff = max(0.0, (dot(N, L) + 0.38) / 1.38);
+
+          // Subsurface Scattering (Backlight Translucency)
+          float sssBack = max(0.0, dot(-N, BackL));
+          float sssCore = max(0.0, dot(-N, CoreL)) * (1.0 - smoothstep(0.0, 2.5, length(uCoreLightPos - vWorldPos)));
+          float sssThickness = (1.0 - u * 0.5) * (1.0 - abs(v) * 0.3);
+          vec3 sssGlow = uSSSColor * (pow(sssBack, 2.0) * 1.6 + sssCore * 2.2) * (1.0 / (sssThickness + 0.1)) * uSSSIntensity;
+
+          // Velvet Fresnel Grazing Sheen
+          float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.2);
+          vec3 sheen = uSheenColor * fresnel * 0.70;
+
+          // Specular highlight
+          vec3 H = normalize(L + V);
+          float spec = pow(max(dot(N, H), 0.0), 22.0) * 0.25;
+
+          vec3 color = albedo * (wrappedDiff * 0.88 + 0.26) + sssGlow + sheen + spec;
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `
+    };
+
+    const petalCustomMaterial = new THREE.ShaderMaterial({
+      vertexShader: PetalShader.vertexShader,
+      fragmentShader: PetalShader.fragmentShader,
+      uniforms: THREE.UniformsUtils.clone(PetalShader.uniforms),
+      side: THREE.DoubleSide
+    });
+
+    const leafCustomMaterial = new THREE.MeshStandardMaterial({
+      color: 0x164710,
+      roughness: 0.38,
+      metalness: 0.06,
+      side: THREE.DoubleSide
+    });
+
+    // --- Procedural 3D Botanical Rose Architecture ---
+    const roseGroup = new THREE.Group();
+    scene.add(roseGroup);
+
+    const petalsData = [];
+    const dewdropsGroup = new THREE.Group();
+    roseGroup.add(dewdropsGroup);
+
+    /**
+     * Builds smooth cylindrical wrapping shell petals (Authentic English Rose cup)
+     */
+    function createWrappedPetalGeom(uSegs = 32, vSegs = 32, arcSpan = 1.4, baseR = 0.5, flareR = 1.2, heightH = 1.4, cupDepth = 0.3, recurve = 0.2) {
+      const geom = new THREE.BufferGeometry();
+      const positions = [];
+      const uvs = [];
+      const indices = [];
+
+      for (let i = 0; i <= uSegs; i++) {
+        const u = i / uSegs; // 0 (base) to 1 (tip)
+
+        for (let j = 0; j <= vSegs; j++) {
+          const vNorm = j / vSegs;
+          const v = vNorm * 2.0 - 1.0; // -1 to 1
+
+          // Smooth rounded top margin
+          const roundCrown = 1.0 - 0.12 * Math.pow(v, 2.0) * Math.pow(u, 2.0);
+
+          // Current angular angle offset across the petal shell
+          const phi = v * (arcSpan * 0.5) * (0.65 + 0.35 * Math.sin(u * Math.PI * 0.75));
+
+          // Radius profile expanding from base to tip + parabolic cup
+          let r = (baseR + (flareR - baseR) * Math.pow(u, 1.25)) + (1.0 - v * v) * cupDepth * Math.sin(u * Math.PI);
+          
+          // Height profile
+          let y = u * heightH * roundCrown - (1.0 - v * v) * 0.08;
+
+          // Outward curl backward at top rim
+          if (u > 0.65) {
+            const tipT = (u - 0.65) / 0.35;
+            r += recurve * tipT * tipT;
+            y -= recurve * tipT * tipT * 0.4;
+          }
+
+          const x = r * Math.sin(phi);
+          const z = r * Math.cos(phi) - baseR;
+
+          positions.push(x, y, z);
+          uvs.push(u, vNorm);
+        }
+      }
+
+      for (let i = 0; i < uSegs; i++) {
+        for (let j = 0; j < vSegs; j++) {
+          const a = i * (vSegs + 1) + j;
+          const b = (i + 1) * (vSegs + 1) + j;
+          const c = (i + 1) * (vSegs + 1) + (j + 1);
+          const d = i * (vSegs + 1) + (j + 1);
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      geom.setIndex(indices);
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geom.computeVertexNormals();
+
+      return geom;
+    }
+
+    // Dewdrops
+    const dewdropMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      roughness: 0.02,
+      metalness: 0.0,
+      transmission: 0.95,
+      ior: 1.333,
+      reflectivity: 0.6,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05
+    });
+
+    const dewdropGeom = new THREE.SphereGeometry(0.04, 16, 16);
+    dewdropGeom.scale(1.0, 0.45, 1.0);
+
+    /**
+     * Constructs the 56-petal Botanical 3D Rose hierarchy
+     */
+    function buildFullRose() {
+      petalsData.length = 0;
+
+      // 6 Concentric Wrapping Shell Layers (Tight spiral core -> broad flared cups)
+      const WHORL_CONFIGS = [
+        { count: 5,  arc: 2.2, baseR: 0.06, flareR: 0.22, height: 1.15, cup: 0.12, recurve: 0.04, tilt0: 0.05, tilt1: 0.12, yOffset: 0.70 }, // Spiral Heart
+        { count: 7,  arc: 1.9, baseR: 0.15, flareR: 0.45, height: 1.30, cup: 0.22, recurve: 0.08, tilt0: 0.12, tilt1: 0.25, yOffset: 0.55 }, // Inner Cup
+        { count: 9,  arc: 1.7, baseR: 0.30, flareR: 0.75, height: 1.45, cup: 0.32, recurve: 0.14, tilt0: 0.20, tilt1: 0.42, yOffset: 0.40 }, // Mid-Inner
+        { count: 11, arc: 1.5, baseR: 0.48, flareR: 1.10, height: 1.55, cup: 0.38, recurve: 0.22, tilt0: 0.30, tilt1: 0.60, yOffset: 0.25 }, // Middle Whorl
+        { count: 11, arc: 1.4, baseR: 0.68, flareR: 1.45, height: 1.65, cup: 0.42, recurve: 0.30, tilt0: 0.40, tilt1: 0.82, yOffset: 0.10 }, // Outer Ring
+        { count: 13, arc: 1.3, baseR: 0.88, flareR: 1.75, height: 1.75, cup: 0.45, recurve: 0.38, tilt0: 0.50, tilt1: 1.05, yOffset: 0.00 }  // Guard Petals
+      ];
+
+      const GOLDEN_SPIRAL = 2.399963; // ~137.5°
+
+      let globalIndex = 0;
+      WHORL_CONFIGS.forEach((whorl, wIdx) => {
+        for (let p = 0; p < whorl.count; p++) {
+          const geom = createWrappedPetalGeom(32, 32, whorl.arc, whorl.baseR, whorl.flareR, whorl.height, whorl.cup, whorl.recurve);
+          const mesh = new THREE.Mesh(geom, petalCustomMaterial);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+
+          const angle = globalIndex * GOLDEN_SPIRAL + (Math.sin(globalIndex * 4.2) * 0.12);
+          const layerRatio = wIdx / (WHORL_CONFIGS.length - 1);
+
+          petalsData.push({
+            mesh: mesh,
+            whorlIndex: wIdx,
+            angle: angle,
+            baseRadius: whorl.baseR,
+            closedAngle: whorl.tilt0,
+            openAngle: whorl.tilt1,
+            heightOffset: whorl.yOffset,
+            layerRatio: layerRatio
+          });
+
+          roseGroup.add(mesh);
+
+          if (wIdx >= 3 && Math.random() > 0.45) {
+            const drop = new THREE.Mesh(dewdropGeom, dewdropMaterial);
+            const dropU = 0.65 + Math.random() * 0.25;
+            const dropPhi = (Math.random() - 0.5) * (whorl.arc * 0.4);
+            const dropR = (whorl.baseR + (whorl.flareR - whorl.baseR) * dropU);
+            drop.position.set(dropR * Math.sin(dropPhi), dropU * whorl.height, dropR * Math.cos(dropPhi) - whorl.baseR);
+            drop.rotation.x = Math.PI / 2;
+            const s = 0.6 + Math.random() * 0.8;
+            drop.scale.set(s, s * 0.5, s);
+            mesh.add(drop);
+          }
+
+          globalIndex++;
+        }
+      });
+    }
+
+    // --- Parametric 3D Curved Rose Leaf ---
+    function create3DLeafGeometry(uSegs = 20, vSegs = 16) {
+      const geom = new THREE.BufferGeometry();
+      const positions = [];
+      const uvs = [];
+      const indices = [];
+
+      for (let i = 0; i <= uSegs; i++) {
+        const u = i / uSegs;
+
+        for (let j = 0; j <= vSegs; j++) {
+          const vNorm = j / vSegs;
+          const v = vNorm * 2.0 - 1.0;
+
+          const serration = 1.0 + Math.sin(u * 40.0) * 0.035 * Math.sin(u * Math.PI);
+          const widthProfile = Math.sin(Math.PI * Math.pow(u, 0.65)) * (1.0 - 0.22 * u) * serration;
+
+          const x = v * widthProfile * 0.55;
+          const y = u * 1.3;
+
+          const zFold = -Math.abs(v) * 0.12 * Math.sin(u * Math.PI);
+          const zArch = Math.sin(u * Math.PI * 0.8) * 0.18 - Math.pow(u, 2.5) * 0.35;
+
+          const z = zFold + zArch;
+
+          positions.push(x, y, z);
+          uvs.push(u, vNorm);
+        }
+      }
+
+      for (let i = 0; i < uSegs; i++) {
+        for (let j = 0; j < vSegs; j++) {
+          const a = i * (vSegs + 1) + j;
+          const b = (i + 1) * (vSegs + 1) + j;
+          const c = (i + 1) * (vSegs + 1) + (j + 1);
+          const d = i * (vSegs + 1) + (j + 1);
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      geom.setIndex(indices);
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geom.computeVertexNormals();
+
+      return geom;
+    }
+
+    // --- 3D Sepal Geometry ---
+    function create3DSepalGeometry(uSegs = 18, vSegs = 12) {
+      const geom = new THREE.BufferGeometry();
+      const positions = [];
+      const uvs = [];
+      const indices = [];
+
+      for (let i = 0; i <= uSegs; i++) {
+        const u = i / uSegs;
+
+        for (let j = 0; j <= vSegs; j++) {
+          const vNorm = j / vSegs;
+          const v = vNorm * 2.0 - 1.0;
+
+          const widthProfile = Math.sin(Math.PI * Math.pow(u, 0.45)) * Math.pow(1.0 - u, 1.2);
+          const x = v * widthProfile * 0.28;
+          const y = u * 1.35;
+          const z = -Math.pow(u, 1.7) * 0.65 + (1.0 - v * v) * 0.04;
+
+          positions.push(x, y, z);
+          uvs.push(u, vNorm);
+        }
+      }
+
+      for (let i = 0; i < uSegs; i++) {
+        for (let j = 0; j < vSegs; j++) {
+          const a = i * (vSegs + 1) + j;
+          const b = (i + 1) * (vSegs + 1) + j;
+          const c = (i + 1) * (vSegs + 1) + (j + 1);
+          const d = i * (vSegs + 1) + (j + 1);
+          indices.push(a, b, d);
+          indices.push(b, c, d);
+        }
+      }
+
+      geom.setIndex(indices);
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geom.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geom.computeVertexNormals();
+
+      return geom;
+    }
+
+    // --- Stem, Thorns & Foliage ---
+    function buildStemAndLeaves() {
+      const stemPath = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0.04, -1.0, 0.03),
+        new THREE.Vector3(-0.06, -2.2, -0.05),
+        new THREE.Vector3(0.03, -3.5, 0.04),
+        new THREE.Vector3(0.0, -4.8, 0.0)
+      ]);
+
+      const stemGeom = new THREE.TubeGeometry(stemPath, 64, 0.065, 16, false);
+      const stemMat = new THREE.MeshStandardMaterial({
+        color: 0x1a3d10,
+        roughness: 0.55,
+        metalness: 0.08
+      });
+      const stemMesh = new THREE.Mesh(stemGeom, stemMat);
+      stemMesh.castShadow = true;
+      roseGroup.add(stemMesh);
+
+      // Thorns
+      const thornGeom = new THREE.ConeGeometry(0.036, 0.15, 12);
+      thornGeom.rotateX(Math.PI / 2);
+      const thornMat = new THREE.MeshStandardMaterial({ color: 0x3d0e0e, roughness: 0.4 });
+
+      [0.22, 0.40, 0.58, 0.75].forEach((u, i) => {
+        const pt = stemPath.getPoint(u);
+        const thorn = new THREE.Mesh(thornGeom, thornMat);
+        thorn.position.copy(pt);
+        thorn.rotation.y = i * 2.2;
+        thorn.rotation.z = 0.45;
+        roseGroup.add(thorn);
+      });
+
+      // Calyx Receptacle
+      const calyxGeom = new THREE.SphereGeometry(0.32, 24, 24);
+      calyxGeom.scale(1.0, 1.4, 1.0);
+      const calyxMesh = new THREE.Mesh(calyxGeom, stemMat);
+      calyxMesh.position.set(0, -0.20, 0);
+      roseGroup.add(calyxMesh);
+
+      // 5 Curving 3D Sepals
+      for (let i = 0; i < 5; i++) {
+        const sGeom = create3DSepalGeometry(18, 12);
+        const sepal = new THREE.Mesh(sGeom, leafCustomMaterial);
+        sepal.position.set(0, -0.15, 0);
+        sepal.rotation.y = (i * Math.PI * 2) / 5;
+        sepal.rotation.x = 1.35;
+        sepal.scale.set(0.85, 0.85, 0.85);
+        sepal.castShadow = true;
+        roseGroup.add(sepal);
+      }
+
+      // Foliage branches
+      buildBotanicalLeafBranch(new THREE.Vector3(0.04, -1.2, 0.03), 0.8, 0.35);
+      buildBotanicalLeafBranch(new THREE.Vector3(-0.05, -2.3, -0.04), 3.6, -0.35);
+    }
+
+    function buildBotanicalLeafBranch(pos, rotY, tiltZ) {
+      const branch = new THREE.Group();
+      branch.position.copy(pos);
+      branch.rotation.y = rotY;
+      branch.rotation.z = tiltZ;
+
+      const petioleMat = new THREE.MeshStandardMaterial({
+        color: 0x1a3d10,
+        roughness: 0.5
+      });
+
+      const rachisGeom = new THREE.CylinderGeometry(0.02, 0.026, 1.1, 8);
+      rachisGeom.rotateX(Math.PI / 2.6);
+      rachisGeom.translate(0, 0.25, 0.55);
+      const rachis = new THREE.Mesh(rachisGeom, petioleMat);
+      branch.add(rachis);
+
+      const leafGeom = create3DLeafGeometry(20, 16);
+
+      const terminalLeaf = new THREE.Mesh(leafGeom, leafCustomMaterial);
+      terminalLeaf.position.set(0, 0.45, 1.05);
+      terminalLeaf.rotation.x = 0.45;
+      terminalLeaf.scale.set(0.85, 0.85, 0.85);
+      terminalLeaf.castShadow = true;
+      branch.add(terminalLeaf);
+
+      function createSideLeaflet(isRight) {
+        const sideGroup = new THREE.Group();
+        sideGroup.position.set(isRight ? 0.22 : -0.22, 0.25, 0.60);
+
+        const leaf = new THREE.Mesh(leafGeom, leafCustomMaterial);
+        leaf.rotation.set(0.35, isRight ? 0.6 : -0.6, isRight ? 0.4 : -0.4);
+        leaf.scale.set(0.68, 0.68, 0.68);
+        leaf.castShadow = true;
+        sideGroup.add(leaf);
+
+        branch.add(sideGroup);
+      }
+
+      createSideLeaflet(false);
+      createSideLeaflet(true);
+
+      roseGroup.add(branch);
+    }
+
+    // --- Floating Ambient Sparks / Dust ---
+    function createRomanticDust() {
+      const count = 160;
+      const geom = new THREE.BufferGeometry();
+      const pos = [];
+      const speeds = [];
+
+      for (let i = 0; i < count; i++) {
+        pos.push(
+          (Math.random() - 0.5) * 8.0,
+          (Math.random() - 0.5) * 7.0 + 1.0,
+          (Math.random() - 0.5) * 8.0
+        );
+        speeds.push(
+          (Math.random() - 0.5) * 0.004,
+          Math.random() * 0.006 + 0.002,
+          (Math.random() - 0.5) * 0.004
+        );
+      }
+
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geom.userData.speeds = speeds;
+
+      const mat = new THREE.PointsMaterial({
+        color: 0xffadc6,
+        size: 0.06,
+        transparent: true,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending
+      });
+
+      particles = new THREE.Points(geom, mat);
+      scene.add(particles);
+    }
+
+    // Build scene
+    buildFullRose();
+    buildStemAndLeaves();
+    createRomanticDust();
+
+    // --- Real-Time Bloom Update System ---
+    function updateBloomState(bloom) {
+      petalsData.forEach(pData => {
+        const { mesh, angle, baseRadius, closedAngle, openAngle, heightOffset, layerRatio } = pData;
+
+        const delay = Math.pow(1.0 - layerRatio, 1.8) * 0.45;
+        const petalBloom = Math.max(0, Math.min(1, (bloom - delay) / (1.0 - delay)));
+
+        const currentAngle = THREE.MathUtils.lerp(closedAngle, openAngle, petalBloom);
+        const currentRadius = baseRadius * (0.35 + 0.65 * petalBloom);
+
+        const x = Math.cos(angle) * currentRadius;
+        const z = Math.sin(angle) * currentRadius;
+        const y = heightOffset * (1.0 - petalBloom * 0.35);
+
+        mesh.position.set(x, y, z);
+        mesh.rotation.set(0, 0, 0);
+        mesh.rotation.y = -angle;
+        const flutterWave = flutterIntensity > 0.001 ? Math.sin(clock.getElapsedTime() * 24.0 + layerRatio * 4.0) * flutterIntensity * 0.07 : 0;
+        mesh.rotateX(currentAngle + flutterWave);
+
+        const scaleMod = 0.55 + 0.45 * petalBloom;
+        mesh.scale.set(scaleMod, scaleMod, scaleMod);
+      });
+    }
+
+    // --- Palette Switcher ---
+    function setPalette(key) {
+      activePalette = PALETTES[key] || PALETTES.crimson;
+      
+      petalCustomMaterial.uniforms.uDarkRoot.value = activePalette.darkRoot;
+      petalCustomMaterial.uniforms.uMidShadow.value = activePalette.midShadow;
+      petalCustomMaterial.uniforms.uMidBody.value = activePalette.midBody;
+      petalCustomMaterial.uniforms.uBrightGlow.value = activePalette.brightGlow;
+      petalCustomMaterial.uniforms.uRimHighlight.value = activePalette.rimHighlight;
+      petalCustomMaterial.uniforms.uSSSColor.value = activePalette.sss;
+      petalCustomMaterial.uniforms.uSheenColor.value = activePalette.sheen;
+
+      coreGlow.color.set(activePalette.coreLight);
+      rimLight.color.set(activePalette.rimLight);
+      bottomBounceLight.color.set(activePalette.groundLight);
+
+      if (particles && particles.material) {
+        particles.material.color.set(activePalette.rimHighlight);
+      }
+    }
+
+    // --- UI Controls & Event Listeners ---
+    const bloomSlider = document.getElementById('bloomSlider');
+    const bloomVal = document.getElementById('bloomVal');
+    const speedSlider = document.getElementById('speedSlider');
+    const speedVal = document.getElementById('speedVal');
+    const loopBtn = document.getElementById('loopBtn');
+    const breezeBtn = document.getElementById('breezeBtn');
+    const dewBtn = document.getElementById('dewBtn');
+    const exportBtn = document.getElementById('exportBtn');
+
+    bloomSlider.addEventListener('input', e => {
+      state.bloom = parseFloat(e.target.value);
+      state.loop = false;
+      loopBtn.classList.remove('active');
+      bloomVal.textContent = Math.round(state.bloom * 100) + '%';
+    });
+
+    speedSlider.addEventListener('input', e => {
+      state.loopSpeed = parseFloat(e.target.value);
+      speedVal.textContent = state.loopSpeed.toFixed(1) + 'x';
+    });
+
+    loopBtn.addEventListener('click', () => {
+      state.loop = !state.loop;
+      loopBtn.classList.toggle('active', state.loop);
+    });
+
+    breezeBtn.addEventListener('click', () => {
+      state.breeze = !state.breeze;
+      breezeBtn.classList.toggle('active', state.breeze);
+    });
+
+
+    dewBtn.addEventListener('click', () => {
+      state.dewdrops = !state.dewdrops;
+      dewBtn.classList.toggle('active', state.dewdrops);
+      dewdropsGroup.visible = state.dewdrops;
+      roseGroup.traverse(child => {
+        if (child.material === dewdropMaterial) child.visible = state.dewdrops;
+      });
+    });
+
+    document.querySelectorAll('.palette-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        setPalette(btn.dataset.palette);
+      });
+    });
+    exportBtn.addEventListener('click', () => {
+      renderer.render(scene, camera);
+      const dataURL = renderer.domElement.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = 'leternelle-rose-3d.png';
+      link.href = dataURL;
+      link.click();
+    });
+    // --- Hide / Show Controls Deck ---
+    const controlsDeck = document.getElementById('controlsDeck');
+    const toggleDeckBtn = document.getElementById('toggleDeckBtn');
+    const closeDeckBtn = document.getElementById('closeDeckBtn');
+
+    function hideControls() {
+      controlsDeck.classList.add('collapsed');
+      toggleDeckBtn.classList.add('visible');
+    }
+
+    function showControls() {
+      controlsDeck.classList.remove('collapsed');
+      toggleDeckBtn.classList.remove('visible');
+    }
+
+    if (closeDeckBtn) closeDeckBtn.addEventListener('click', hideControls);
+    if (toggleDeckBtn) toggleDeckBtn.addEventListener('click', showControls);
+
+    // Keyboard shortcut (H or C)
+    window.addEventListener('keydown', e => {
+      if (e.key === 'h' || e.key === 'H' || e.key === 'c' || e.key === 'C') {
+        if (controlsDeck.classList.contains('collapsed')) {
+          showControls();
+        } else {
+          hideControls();
+        }
+      }
+    });
+
+    // Double-click / double-tap anywhere on background to toggle controls deck
+    window.addEventListener('dblclick', e => {
+      if (controlsDeck.contains(e.target) || toggleDeckBtn.contains(e.target)) return;
+      if (controlsDeck.classList.contains('collapsed')) {
+        showControls();
+      } else {
+        hideControls();
+      }
+    });
+    // Auto-collapse controls deck on small screens to let the rose breathe
+    if (window.innerWidth < 768) {
+      hideControls();
+    }
+    // --- Romantic Typewriter Animation ---
+    const typewriterEl = document.getElementById('typewriterText');
+    const romanticPhrases = [
+      "I love you",
+      "Florescendo para sempre por você",
+      "Every petal whispers your name",
+      "My heart chose you ❤️",
+      "In a world of fleeting moments, you are my forever",
+      "Always you. Only you.",
+      "I love you ❤️"
+    ];
+    let phraseIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+
+    function typeWriterLoop() {
+      const currentPhrase = romanticPhrases[phraseIdx];
+      const chars = Array.from(currentPhrase);
+      
+      if (!isDeleting) {
+        charIdx++;
+        typewriterEl.textContent = chars.slice(0, charIdx).join('');
+        
+        if (charIdx === chars.length) {
+          const pauseTime = (phraseIdx === romanticPhrases.length - 1) ? 4500 : 3000;
+          setTimeout(() => {
+            isDeleting = true;
+            typeWriterLoop();
+          }, pauseTime);
+          return;
+        }
+      } else {
+        charIdx--;
+        typewriterEl.textContent = chars.slice(0, charIdx).join('');
+        
+        if (charIdx === 0) {
+          isDeleting = false;
+          phraseIdx = (phraseIdx + 1) % romanticPhrases.length;
+        }
+      }
+
+      const speed = isDeleting ? 40 : (85 + Math.random() * 40);
+      setTimeout(typeWriterLoop, speed);
+    }
+    typeWriterLoop();
+
+    // --- Interactive Love Letter Modal ---
+    const letterBtn = document.getElementById('letterBtn');
+    const letterModal = document.getElementById('letterModal');
+    const closeLetterBtn = document.getElementById('closeLetterBtn');
+
+    letterBtn.addEventListener('click', () => letterModal.classList.add('open'));
+    closeLetterBtn.addEventListener('click', () => letterModal.classList.remove('open'));
+    letterModal.addEventListener('click', e => {
+      if (e.target === letterModal) letterModal.classList.remove('open');
+    });
+
+    // --- Floating Hearts & Sparkles Particle Generator ---
+    function spawnHeartsAt(clientX, clientY, count = 6) {
+      const symbols = ['❤️', '💖', '✨', '🌸', '💕'];
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'floating-heart';
+        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 30 + Math.random() * 55;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist - 25;
+        const rot = (Math.random() - 0.5) * 40;
+        const size = 16 + Math.random() * 12;
+        el.style.left = `${clientX}px`;
+        el.style.top = `${clientY}px`;
+        el.style.fontSize = `${size}px`;
+        el.style.setProperty('--tx', `${tx}px`);
+        el.style.setProperty('--ty', `${ty}px`);
+        el.style.setProperty('--rot', `${rot}deg`);
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1800);
+      }
+    }
+
+    // --- Mobile-First Touch & Raycaster Tap Interaction ---
+    const raycaster = new THREE.Raycaster();
+    const touchNorm = new THREE.Vector2();
+    let flutterIntensity = 0;
+    let touchStartT = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    function handlePointerStart(clientX, clientY) {
+      touchStartT = Date.now();
+      touchStartX = clientX;
+      touchStartY = clientY;
+    }
+
+    function handlePointerEnd(clientX, clientY, target) {
+      if (controlsDeck.contains(target) || toggleDeckBtn.contains(target) || letterBtn.contains(target) || letterModal.contains(target)) return;
+
+      const duration = Date.now() - touchStartT;
+      const dx = clientX - touchStartX;
+      const dy = clientY - touchStartY;
+      const dist = Math.hypot(dx, dy);
+
+      // Distinguish clean tap / click from OrbitControls rotation drag
+      if (duration < 450 && dist < 18) {
+        touchNorm.x = (clientX / window.innerWidth) * 2 - 1;
+        touchNorm.y = -(clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(touchNorm, camera);
+
+        const intersects = raycaster.intersectObjects(roseGroup.children, true);
+        if (intersects.length > 0) {
+          flutterIntensity = 1.0;
+          spawnHeartsAt(clientX, clientY, 8);
+        } else {
+          spawnHeartsAt(clientX, clientY, 4);
+        }
+      }
+    }
+
+    window.addEventListener('pointerdown', e => handlePointerStart(e.clientX, e.clientY), { passive: true });
+    window.addEventListener('pointerup', e => handlePointerEnd(e.clientX, e.clientY, e.target));
+
+    // Touch fallbacks for mobile browsers
+    window.addEventListener('touchstart', e => {
+      if (e.touches && e.touches[0]) {
+        handlePointerStart(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', e => {
+      if (e.changedTouches && e.changedTouches[0]) {
+        handlePointerEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY, e.target);
+      }
+    });
+    // --- Mobile Gyroscope & Desktop Mouse Parallax ---
+    const gazeParallax = { x: 0, y: 0, targetX: 0, targetY: 0 };
+
+    window.addEventListener('mousemove', e => {
+      gazeParallax.targetX = (e.clientX / window.innerWidth - 0.5) * 0.16;
+      gazeParallax.targetY = (e.clientY / window.innerHeight - 0.5) * 0.10;
+    }, { passive: true });
+
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', e => {
+        if (e.gamma !== null && e.beta !== null) {
+          const tiltX = Math.max(-1, Math.min(1, e.gamma / 30));
+          const tiltY = Math.max(-1, Math.min(1, (e.beta - 40) / 30));
+          gazeParallax.targetX = tiltX * 0.20;
+          gazeParallax.targetY = tiltY * 0.14;
+        }
+      }, { passive: true });
+    }
+
+    // --- Master Render Loop ---
+    const clock = new THREE.Clock();
+
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+      const elapsedTime = clock.getElapsedTime();
+
+      // Seamless Blooming Loop: Closed Bud (0.2) -> Full Blossom (1.0)
+      if (state.loop) {
+        const cycle = (Math.sin(elapsedTime * 0.55 * state.loopSpeed) + 1.0) * 0.5;
+        state.bloom = 0.22 + 0.78 * Math.pow(cycle, 1.15);
+        bloomSlider.value = state.bloom;
+        bloomVal.textContent = Math.round(state.bloom * 100) + '%';
+      }
+
+      updateBloomState(state.bloom);
+      petalCustomMaterial.uniforms.uTime.value = elapsedTime;
+
+      if (state.breeze) {
+        const swayX = Math.sin(elapsedTime * 0.75) * 0.045 + Math.sin(elapsedTime * 1.5) * 0.015;
+        const swayZ = Math.cos(elapsedTime * 0.55) * 0.035;
+        roseGroup.rotation.x = swayX;
+        roseGroup.rotation.z = swayZ;
+        roseGroup.rotation.y = elapsedTime * 0.12 + gazeParallax.x;
+        roseGroup.rotation.x = swayX + gazeParallax.y;
+      } else {
+        roseGroup.rotation.y = gazeParallax.x;
+        roseGroup.rotation.x = gazeParallax.y;
+      }
+
+      gazeParallax.x += (gazeParallax.targetX - gazeParallax.x) * 0.045;
+      gazeParallax.y += (gazeParallax.targetY - gazeParallax.y) * 0.045;
+
+      if (flutterIntensity > 0.001) {
+        flutterIntensity *= 0.93;
+      }
+
+      if (particles) {
+        const posAttr = particles.geometry.attributes.position;
+        const speeds = particles.geometry.userData.speeds;
+        for (let i = 0; i < posAttr.count; i++) {
+          let y = posAttr.getY(i) + speeds[i * 3 + 1];
+          let x = posAttr.getX(i) + speeds[i * 3];
+          let z = posAttr.getZ(i) + speeds[i * 3 + 2];
+
+          if (y > 4.5) y = -2.5;
+          posAttr.setXYZ(i, x, y, z);
+        }
+        posAttr.needsUpdate = true;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      updateCameraFraming();
+    });
+
+    renderLoop();
+  </script>
+</body>
+</html>
